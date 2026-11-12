@@ -1,6 +1,6 @@
 module.exports = {
   apps: [{
-    name: 'sonos-arc-controller',
+    name: 'sonos-controller',
     script: 'npm',
     args: 'run dev',
     cwd: __dirname, // automatically resolves to this file's directory

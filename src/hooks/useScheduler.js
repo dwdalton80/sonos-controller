@@ -43,6 +43,17 @@ export function useScheduler({ profiles, config, applyProfile, onAutoApply }) {
 
   const lastTriggeredRef = useRef({})
 
+  // When server.js is running its own scheduler, don't also fire from the
+  // browser (double-apply). In `npm run dev` the endpoint 404s, so the
+  // browser keeps firing as before.
+  const serverSchedulerRef = useRef(null) // null = unknown yet
+  useEffect(() => {
+    fetch('/sonos-scheduler')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => { serverSchedulerRef.current = !!d?.active })
+      .catch(() => { serverSchedulerRef.current = false })
+  }, [])
+
   // On mount, sync with the file store. File data wins; if file is empty,
   // seed it from localStorage so existing schedules are migrated immediately.
   useEffect(() => {
@@ -82,6 +93,7 @@ export function useScheduler({ profiles, config, applyProfile, onAutoApply }) {
   // Check schedules every 30 seconds
   useEffect(() => {
     const check = async () => {
+      if (serverSchedulerRef.current !== false) return
       const now = new Date()
       const currentDay = now.getDay()
       const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`

@@ -1,9 +1,9 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import http from 'http'
-import https from 'https'
 import fs from 'fs'
 import path from 'path'
+import { isAllowedProxyTarget, isTrustedRequest } from './server/guards.js'
 
 const DATA_FILE = path.resolve(__dirname, 'sonos-data.json')
 
@@ -21,13 +21,9 @@ function sonosStorePlugin() {
         const url = req.url.split('?')[0]
         if (url !== '/sonos-store') return next()
 
-        res.setHeader('Access-Control-Allow-Origin', '*')
-        res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-        res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
-
-        if (req.method === 'OPTIONS') {
-          res.statusCode = 204
-          res.end()
+        if (!isTrustedRequest(req)) {
+          res.statusCode = 403
+          res.end('Forbidden')
           return
         }
 
@@ -83,6 +79,12 @@ function sonosProxyPlugin() {
       server.middlewares.use((req, res, next) => {
         if (!req.url.startsWith('/sonos-proxy')) return next()
 
+        if (!isTrustedRequest(req)) {
+          res.statusCode = 403
+          res.end('Forbidden')
+          return
+        }
+
         const queryStart = req.url.indexOf('?')
         const qs = queryStart !== -1 ? req.url.slice(queryStart + 1) : ''
         const params = new URLSearchParams(qs)
@@ -103,11 +105,14 @@ function sonosProxyPlugin() {
           return
         }
 
-        // Set CORS headers so the browser accepts our proxy response
-        res.setHeader('Access-Control-Allow-Origin', '*')
+        if (!isAllowedProxyTarget(targetUrl)) {
+          res.statusCode = 403
+          res.setHeader('Content-Type', 'application/json')
+          res.end(JSON.stringify({ error: 'Target must be an http:// address on your local network' }))
+          return
+        }
 
-        const transport = targetUrl.startsWith('https:') ? https : http
-        const proxyReq = transport.request(targetUrl, { method: 'GET', timeout: 8000 }, (proxyRes) => {
+        const proxyReq = http.request(targetUrl, { method: 'GET', timeout: 8000 }, (proxyRes) => {
           res.statusCode = proxyRes.statusCode
           // Pass through the real content-type so images render correctly
           const contentType = proxyRes.headers['content-type']

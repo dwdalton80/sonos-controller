@@ -345,7 +345,7 @@ export default function App() {
         <div className="app-header-title">
           <div className="app-logo" />
           <h1 className="app-title">
-            Arc <span>Controller</span>
+            Sonos <span>Controller</span>
           </h1>
         </div>
         <span
@@ -546,11 +546,11 @@ export default function App() {
                 style={{ gap: 6, fontSize: 13, color: 'var(--text-secondary)' }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span>Arc Controller</span>
+                  <span>Sonos Controller</span>
                   <span style={{ color: 'var(--text-muted)' }}>v1.3.0</span>
                 </div>
                 <div style={{ color: 'var(--text-muted)', fontSize: 11, lineHeight: 1.6 }}>
-                  Connects to node-sonos-http-api to control your Sonos Arc.
+                  Connects to node-sonos-http-api to control your Sonos speakers.
                   Profiles and schedules are stored locally in your browser.
                 </div>
                 <div style={{ color: 'var(--text-muted)', fontSize: 11 }}>

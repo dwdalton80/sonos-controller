@@ -168,10 +168,21 @@ vite.config.js             # Dev server with proxy + store middleware
 | YouTube Music liked-songs showed playlist thumbnail instead of track art | Now fetches art via the Sonos device's `/getaa` endpoint (`albumArtUri`) rather than `absoluteAlbumArtUri` |
 | Port conflict when running alongside Claude Code preview server | Daemon now uses `PORT` env var; default bumped to avoid collision |
 | Live Controls panel overlapped content when scrolling | Panel is now collapsible and collapses automatically after a profile is applied |
-| Volume write applied to individual room only when grouped | Write now uses `groupvolume` command when Kitchen is in the group |
+| Volume write applied to individual room only when grouped | Write now uses `groupvolume` command when the speaker is in a group |
 
 ---
 
 ## License
 
 [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/) — free for personal and non-commercial use. Commercial use requires explicit written permission.
+
+---
+
+## Fork notes
+
+This is a fork of [tonypest0/sonos-controller](https://github.com/tonypest0/sonos-controller), used under its [CC BY-NC 4.0](LICENSE) license (non-commercial, attribution required). Changes in this fork:
+
+- **Server-side scheduler** (`server/scheduler.js`): schedules fire from the Node server, so they run with no browser tab open. Missed runs are caught up for 5 minutes (e.g. after sleep). Scheduled runs appear in the Activity Log. Only active under `npm start`, not `npm run dev`.
+- **Locked-down proxy and store**: `/sonos-proxy` only reaches `http://` hosts on your local network, requests must come from the app's own origin, wildcard CORS is removed, and the server binds to `127.0.0.1` (set `HOST=0.0.0.0` for LAN access).
+- **Dependency fix**: `node-sonos-http-api` is not on npm, so it is pinned to a GitHub commit.
+- **Generic branding** (no longer Sonos Arc specific) and `npm test`.

@@ -9,13 +9,16 @@
  */
 
 import http  from 'http'
-import https from 'https'
 import fs    from 'fs'
 import path  from 'path'
 import { fileURLToPath } from 'url'
+import { isAllowedProxyTarget, isTrustedRequest } from './server/guards.js'
+import { startScheduler } from './server/scheduler.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const PORT      = parseInt(process.env.PORT || '3000')
+const HOST      = process.env.HOST || '127.0.0.1'   // set HOST=0.0.0.0 to allow LAN access
+const MAX_BODY  = 1024 * 1024
 const DATA_FILE = path.resolve(__dirname, 'sonos-data.json')
 const DIST_DIR  = path.resolve(__dirname, 'dist')
 
@@ -72,16 +75,6 @@ async function serveStatic(req, res) {
 // ── /sonos-store — persists app state to sonos-data.json ──────────────────────
 
 function handleStore(req, res) {
-  res.setHeader('Access-Control-Allow-Origin',  '*')
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
-
-  if (req.method === 'OPTIONS') {
-    res.statusCode = 204
-    res.end()
-    return
-  }
-
   if (req.method === 'GET') {
     fs.promises.readFile(DATA_FILE, 'utf8')
       .then(raw  => JSON.parse(raw))
@@ -96,8 +89,13 @@ function handleStore(req, res) {
 
   if (req.method === 'POST') {
     let body = ''
-    req.on('data', chunk => { body += chunk })
+    let tooBig = false
+    req.on('data', chunk => {
+      body += chunk
+      if (body.length > MAX_BODY) { tooBig = true; req.destroy() }
+    })
     req.on('end', async () => {
+      if (tooBig) return
       try {
         const updates  = JSON.parse(body)
         const existing = await fs.promises.readFile(DATA_FILE, 'utf8')
@@ -143,10 +141,14 @@ function handleProxy(req, res) {
     return
   }
 
-  res.setHeader('Access-Control-Allow-Origin', '*')
+  if (!isAllowedProxyTarget(targetUrl)) {
+    res.statusCode = 403
+    res.setHeader('Content-Type', 'application/json')
+    res.end(JSON.stringify({ error: 'Target must be an http:// address on your local network' }))
+    return
+  }
 
-  const transport = targetUrl.startsWith('https:') ? https : http
-  const proxyReq  = transport.request(targetUrl, { method: 'GET', timeout: 8000 }, proxyRes => {
+  const proxyReq  = http.request(targetUrl, { method: 'GET', timeout: 8000 }, proxyRes => {
     res.statusCode = proxyRes.statusCode
     const ct = proxyRes.headers['content-type']
     if (ct) res.setHeader('Content-Type', ct)
@@ -173,11 +175,24 @@ function handleProxy(req, res) {
 
 const server = http.createServer((req, res) => {
   const url = req.url.split('?')[0]
+  if (!isTrustedRequest(req)) {
+    res.statusCode = 403
+    res.end('Forbidden')
+    return
+  }
+  if (url === '/sonos-scheduler')      return res.end(JSON.stringify({ active: true }))
   if (url === '/sonos-store')          return handleStore(req, res)
   if (url.startsWith('/sonos-proxy'))  return handleProxy(req, res)
   serveStatic(req, res)
 })
 
-server.listen(PORT, () => {
-  console.log(`Sonos Controller running at http://localhost:${PORT}`)
+server.listen(PORT, HOST, () => {
+  console.log(`Sonos Controller running at http://localhost:${PORT} (bound to ${HOST})`)
+  startScheduler({
+    read:  () => fs.promises.readFile(DATA_FILE, 'utf8').then(JSON.parse).catch(() => ({})),
+    write: async (patch) => {
+      const cur = await fs.promises.readFile(DATA_FILE, 'utf8').then(JSON.parse).catch(() => ({}))
+      await fs.promises.writeFile(DATA_FILE, JSON.stringify({ ...cur, ...patch }, null, 2))
+    },
+  })
 })

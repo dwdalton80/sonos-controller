@@ -1,4 +1,6 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
+import { loadStore } from '../lib/fileStore'
+import { mergeLogEntries } from '../lib/mergeLog'
 
 const LOG_KEY = 'sonos-activity-log'
 const MAX_ENTRIES = 500
@@ -25,6 +27,23 @@ let idCounter = Date.now()
 
 export function useActivityLog() {
   const [entries, setEntries] = useState(() => safeGet(LOG_KEY, []))
+
+  // Pull in entries the server-side scheduler wrote while no tab was open.
+  useEffect(() => {
+    let cancelled = false
+    const sync = () => loadStore().then((store) => {
+      const incoming = store['sonos-server-log']
+      if (cancelled || !incoming?.length) return
+      setEntries((prev) => {
+        const next = mergeLogEntries(prev, incoming, MAX_ENTRIES)
+        if (next !== prev) safeSet(LOG_KEY, next)
+        return next
+      })
+    })
+    sync()
+    const id = setInterval(sync, 30000)
+    return () => { cancelled = true; clearInterval(id) }
+  }, [])
 
   const addEntry = useCallback(({ type, action, what, before, after }) => {
     const entry = {
