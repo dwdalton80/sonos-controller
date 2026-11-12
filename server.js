@@ -20,9 +20,9 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const PORT      = parseInt(process.env.PORT || '3000')
 const HOST      = process.env.HOST || '127.0.0.1'   // set HOST=0.0.0.0 to allow LAN access
 const MAX_BODY  = 1024 * 1024
-const store     = createStore(DATA_FILE)
 const DATA_FILE = path.resolve(__dirname, 'sonos-data.json')
 const DIST_DIR  = path.resolve(__dirname, 'dist')
+const store     = createStore(DATA_FILE)
 
 const MIME = {
   '.html':  'text/html; charset=utf-8',
