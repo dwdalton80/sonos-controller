@@ -77,7 +77,7 @@ function LiveSlider({ icon: Icon, label, value, min, max, onChange, pending, uni
           onTouchEnd={handleDragEnd}
           onChange={handleChange}
           style={{
-            background: `linear-gradient(to right, var(--accent-primary) ${pct}%, var(--border) ${pct}%)`,
+            background: `linear-gradient(to right, var(--accent-primary) ${pct}%, var(--track) ${pct}%)`,
           }}
         />
       </div>

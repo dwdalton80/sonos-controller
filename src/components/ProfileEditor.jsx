@@ -32,7 +32,7 @@ function Slider({ label, value, min, max, step = 1, onChange, unit = '' }) {
           value={value}
           onChange={(e) => onChange(Number(e.target.value))}
           style={{
-            background: `linear-gradient(to right, var(--accent-primary) ${pct}%, var(--border) ${pct}%)`,
+            background: `linear-gradient(to right, var(--accent-primary) ${pct}%, var(--track) ${pct}%)`,
           }}
         />
       </div>

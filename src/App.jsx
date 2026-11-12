@@ -6,6 +6,7 @@ import { useSonosApi } from './hooks/useSonosApi'
 import { useScheduler } from './hooks/useScheduler'
 import { useSessionWatcher } from './hooks/useSessionWatcher'
 import { useActivityLog } from './hooks/useActivityLog'
+import { useTextScale, TEXT_SIZES } from './hooks/useTextScale'
 import { useNowPlaying } from './hooks/useNowPlaying'
 
 import QuickControls from './components/QuickControls'
@@ -93,7 +94,7 @@ function NowPlayingStrip({ activeProfile, appliedAt, onQuickApply, applying }) {
             )}
           </>
         ) : (
-          <span style={{ fontSize: 15, color: 'var(--text-muted)' }}>
+          <span style={{ fontSize: 'calc(15px * var(--text-scale))', color: 'var(--text-muted)' }}>
             None selected
           </span>
         )}
@@ -116,6 +117,7 @@ function NowPlayingStrip({ activeProfile, appliedAt, onQuickApply, applying }) {
 // ===== Main App =====
 export default function App() {
   const [tab, setTab] = useState('nowplaying')
+  const { scale: textScale, setScale: setTextScale } = useTextScale()
   const [loading, setLoading] = useState(true)
   const [editorProfile, setEditorProfile] = useState(null) // null = closed, {} = new, {...} = edit
   const [isEditorOpen, setIsEditorOpen] = useState(false)
@@ -350,7 +352,7 @@ export default function App() {
         </div>
         <span
           style={{
-            fontSize: 13,
+            fontSize: 'calc(13px * var(--text-scale))',
             color: 'var(--text-muted)',
             background: 'var(--bg-elevated)',
             padding: '3px 8px',
@@ -490,12 +492,38 @@ export default function App() {
             </div>
 
             <div className="settings-section">
+              <div className="settings-section-title">Text Size</div>
+              <div className="settings-card" style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
+                {TEXT_SIZES.map((o) => (
+                  <button
+                    key={o.value}
+                    onClick={() => setTextScale(o.value)}
+                    aria-pressed={textScale === o.value}
+                    style={{
+                      flex: '1 1 0',
+                      minWidth: 90,
+                      padding: '12px 10px',
+                      borderRadius: 10,
+                      cursor: 'pointer',
+                      fontSize: 'calc(15px * var(--text-scale))',
+                      color: textScale === o.value ? '#000' : 'var(--text-primary)',
+                      background: textScale === o.value ? 'var(--accent-primary)' : 'var(--bg-elevated)',
+                      border: '1px solid ' + (textScale === o.value ? 'var(--accent-primary)' : 'var(--track)'),
+                    }}
+                  >
+                    {o.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="settings-section">
               <div className="settings-section-title">Session Start</div>
               <div className="settings-card" style={{ gap: 12 }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <div>
-                    <div style={{ fontSize: 15, color: 'var(--text-primary)' }}>Auto-set volume on session start</div>
-                    <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 2 }}>
+                    <div style={{ fontSize: 'calc(15px * var(--text-scale))', color: 'var(--text-primary)' }}>Auto-set volume on session start</div>
+                    <div style={{ fontSize: 'calc(13px * var(--text-scale))', color: 'var(--text-muted)', marginTop: 2 }}>
                       Sets volume when playback begins (e.g. TV turns on)
                     </div>
                   </div>
@@ -511,7 +539,7 @@ export default function App() {
                 </div>
                 {sessionEnabled && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <span style={{ fontSize: 15, color: 'var(--text-secondary)', flexShrink: 0 }}>
+                    <span style={{ fontSize: 'calc(15px * var(--text-scale))', color: 'var(--text-secondary)', flexShrink: 0 }}>
                       Start volume
                     </span>
                     <input
@@ -523,10 +551,10 @@ export default function App() {
                       onChange={(e) => handleStartVolumeChange(Number(e.target.value))}
                       style={{
                         flex: 1,
-                        background: `linear-gradient(to right, var(--accent-primary) ${startVolume}%, var(--border) ${startVolume}%)`,
+                        background: `linear-gradient(to right, var(--accent-primary) ${startVolume}%, var(--track) ${startVolume}%)`,
                       }}
                     />
-                    <span style={{ fontSize: 15, color: 'var(--accent-primary)', width: 28, textAlign: 'right', flexShrink: 0 }}>
+                    <span style={{ fontSize: 'calc(15px * var(--text-scale))', color: 'var(--accent-primary)', width: 28, textAlign: 'right', flexShrink: 0 }}>
                       {startVolume}
                     </span>
                   </div>
@@ -543,17 +571,17 @@ export default function App() {
               <div className="settings-section-title">About</div>
               <div
                 className="settings-card"
-                style={{ gap: 6, fontSize: 15, color: 'var(--text-secondary)' }}
+                style={{ gap: 6, fontSize: 'calc(15px * var(--text-scale))', color: 'var(--text-secondary)' }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span>Sonos Controller</span>
                   <span style={{ color: 'var(--text-muted)' }}>v1.3.0</span>
                 </div>
-                <div style={{ color: 'var(--text-muted)', fontSize: 13, lineHeight: 1.6 }}>
+                <div style={{ color: 'var(--text-muted)', fontSize: 'calc(13px * var(--text-scale))', lineHeight: 1.6 }}>
                   Connects to node-sonos-http-api to control your Sonos speakers.
                   Profiles and schedules are stored locally in your browser.
                 </div>
-                <div style={{ color: 'var(--text-muted)', fontSize: 13 }}>
+                <div style={{ color: 'var(--text-muted)', fontSize: 'calc(13px * var(--text-scale))' }}>
                   {profiles.length} profile{profiles.length !== 1 ? 's' : ''} &nbsp;·&nbsp;{' '}
                   {schedules.length} schedule{schedules.length !== 1 ? 's' : ''}
                 </div>

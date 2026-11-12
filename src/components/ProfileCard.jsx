@@ -50,7 +50,7 @@ export default function ProfileCard({
           }}
           onClick={(e) => e.stopPropagation()}
           style={{
-            background: `linear-gradient(to right, var(--accent-primary) ${liveVolume}%, var(--border) ${liveVolume}%)`,
+            background: `linear-gradient(to right, var(--accent-primary) ${liveVolume}%, var(--track) ${liveVolume}%)`,
           }}
         />
       </div>
@@ -90,7 +90,7 @@ export default function ProfileCard({
           onClick={(e) => e.stopPropagation()}
           style={{
             background: profile.subwooferEnabled
-              ? `linear-gradient(to right, var(--accent-primary) ${((liveSubGain + 15) / 30) * 100}%, var(--border) ${((liveSubGain + 15) / 30) * 100}%)`
+              ? `linear-gradient(to right, var(--accent-primary) ${((liveSubGain + 15) / 30) * 100}%, var(--track) ${((liveSubGain + 15) / 30) * 100}%)`
               : 'var(--border)',
           }}
         />
