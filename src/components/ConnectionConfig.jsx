@@ -63,7 +63,7 @@ export default function ConnectionConfig({ config, onSave, onTest, testing }) {
           value={form.room}
           onChange={set('room')}
         />
-        <span style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
+        <span style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 2 }}>
           Must match the room name exactly in your Sonos app
         </span>
       </div>
@@ -109,7 +109,7 @@ export default function ConnectionConfig({ config, onSave, onTest, testing }) {
           padding: '10px 12px',
           background: 'var(--bg-elevated)',
           borderRadius: 8,
-          fontSize: 11,
+          fontSize: 13,
           color: 'var(--text-muted)',
           lineHeight: 1.6,
           borderLeft: '2px solid var(--border)',

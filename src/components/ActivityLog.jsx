@@ -65,7 +65,7 @@ export default function ActivityLog({ entries, onClear }) {
           <button
             className="btn btn-secondary"
             onClick={onClear}
-            style={{ padding: '6px 12px', minHeight: 32, fontSize: 12 }}
+            style={{ padding: '6px 12px', minHeight: 32, fontSize: 14 }}
           >
             <Trash2 size={12} />
             Clear
