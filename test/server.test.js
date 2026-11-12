@@ -86,3 +86,16 @@ test('mergeLogEntries: dedupes by id, sorts newest first, returns same ref when 
   const merged = mergeLogEntries(local, [{ id: 'srv-a', timestamp: 200 }, { id: '1', timestamp: 100 }])
   assert.deepEqual(merged.map((e) => e.id), ['srv-a', '1'])
 })
+
+import { createStore } from '../server/store.js'
+import os from 'os'
+import fsp from 'fs/promises'
+import pathMod from 'path'
+
+test('store: concurrent writes to different keys are all kept', async () => {
+  const dir = await fsp.mkdtemp(pathMod.join(os.tmpdir(), 'sonos-store-'))
+  const store = createStore(pathMod.join(dir, 'data.json'))
+  await Promise.all(['a', 'b', 'c', 'd', 'e'].map((k, i) => store.write({ [k]: i })))
+  assert.deepEqual(await store.read(), { a: 0, b: 1, c: 2, d: 3, e: 4 })
+  await fsp.rm(dir, { recursive: true })
+})
