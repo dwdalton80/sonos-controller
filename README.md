@@ -185,4 +185,6 @@ This is a fork of [tonypest0/sonos-controller](https://github.com/tonypest0/sono
 - **Server-side scheduler** (`server/scheduler.js`): schedules fire from the Node server, so they run with no browser tab open. Missed runs are caught up for 5 minutes (e.g. after sleep). Scheduled runs appear in the Activity Log. Only active under `npm start`, not `npm run dev`.
 - **Locked-down proxy and store**: `/sonos-proxy` only reaches `http://` hosts on your local network, requests must come from the app's own origin, wildcard CORS is removed, and the server binds to `127.0.0.1` (set `HOST=0.0.0.0` for LAN access).
 - **Dependency fix**: `node-sonos-http-api` is not on npm, so it is pinned to a GitHub commit.
+- **`npm run sonos-api`** starts `node-sonos-http-api` (port 5005) from the installed dependency; run it in a second terminal next to `npm start`.
+- **Readability**: higher text contrast, brighter slider tracks, and a Text Size setting (Settings → Text Size).
 - **Generic branding** (no longer Sonos Arc specific) and `npm test`.

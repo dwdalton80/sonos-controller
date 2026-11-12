@@ -10,6 +10,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "start": "node server.js",
+    "sonos-api": "node node_modules/node-sonos-http-api/server.js",
     "test": "node --test test/server.test.js"
   },
   "dependencies": {
